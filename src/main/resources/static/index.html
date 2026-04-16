@@ -78,31 +78,21 @@
 <script>
     let currentTab = 'users';
 
-    // REEMPLAZA DESDE AQUÍ
+    // Configuración de Endpoints y Campos (Deben coincidir con tus Entity de Java)
     const CONFIG = {
         users: {
-            title: "Usuarios",
-            url: "/api/users",
-            fields: ['name', 'email'],
-            labels: ['Nombre', 'Email']
+            title: "Usuarios", desc: "Lista de visitantes y administradores", url: "/api/users",
+            fields: ['name', 'email'], labels: ['Nombre', 'Email']
         },
         guides: {
-            title: "Guías",
-            url: "/api/guides",
-            fields: ['name', 'specialty'],
-            labels: ['Nombre del Guía', 'Especialidad']
+            title: "Guías", desc: "Personal especializado en recorridos", url: "/api/guides",
+            fields: ['name', 'specialty'], labels: ['Nombre del Guía', 'Especialidad']
         },
         art: {
-            title: "Exhibiciones",
-            url: "/api/exhibition",
-            fields: ['title', 'artist', 'year'],
-            labels: ['Título de Obra', 'Artista', 'Año']
+            title: "Exhibiciones", desc: "Obras de arte y piezas históricas", url: "/api/exhibition",
+            fields: ['title', 'artist', 'year'], labels: ['Título de Obra', 'Artista', 'Año']
         }
     };
-    // HASTA AQUÍ
-
-    // ... el resto de tus funciones (showTab, loadData, etc.)
-
 
     // Lógica de Login
     document.getElementById('loginForm').onsubmit = (e) => {
