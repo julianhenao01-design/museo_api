@@ -51,8 +51,7 @@
             <div class="glass p-6 rounded-2xl border border-white/5 h-fit">
                 <h3 class="text-lg font-semibold mb-4 text-amber-500/80">Nuevo Registro</h3>
                 <form id="masterForm" class="space-y-4">
-                    <div id="formInputs" class="space-y-3">
-                    </div>
+                    <div id="formInputs" class="space-y-3"></div>
                     <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-lg shadow-lg transition-all mt-4">
                         Guardar en DB
                     </button>
@@ -76,32 +75,31 @@
 <script>
     let currentTab = 'users';
 
-    // CONFIGURACIÓN MAESTRA: Separa las URLs y los campos para cada tabla
+    // CONFIGURACIÓN CORREGIDA: Sincronizada con tus controllers de Java
     const CONFIG = {
         users: {
             title: "Usuarios",
             desc: "Lista de visitantes y administradores",
-            url: "/api/user",
+            url: "/api/user", // Coincide con @RequestMapping("/api/user")
             fields: ['name', 'email'],
             labels: ['Nombre', 'Email']
         },
         guides: {
             title: "Guías",
             desc: "Personal especializado en recorridos",
-            url: "/api/guide",
+            url: "/api/guide", // Coincide con @RequestMapping("/api/guide")
             fields: ['name', 'specialty'],
             labels: ['Nombre del Guía', 'Especialidad']
         },
         art: {
-            title: "Exhibicion",
+            title: "Exhibiciones",
             desc: "Obras de arte y piezas históricas",
-            url: "/api/exhibition",
+            url: "/api/exhibition", // Coincide con @RequestMapping("/api/exhibition")
             fields: ['title', 'artist', 'year'],
             labels: ['Título de Obra', 'Artista', 'Año']
         }
     };
 
-    // Lógica de Login
     document.getElementById('loginForm').onsubmit = (e) => {
         e.preventDefault();
         if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
@@ -111,7 +109,6 @@
         } else { alert('Credenciales incorrectas'); }
     };
 
-    // Función para cambiar de pestaña y limpiar datos previos
     function showTab(tab) {
         currentTab = tab;
         document.querySelectorAll('nav button').forEach(b => {
@@ -123,14 +120,12 @@
         document.getElementById('tabTitle').innerText = `Gestión de ${CONFIG[tab].title}`;
         document.getElementById('tabDesc').innerText = CONFIG[tab].desc;
 
-        // Limpia la tabla visualmente mientras carga
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">Cargando registros de la tabla...</td></tr>';
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">Cargando registros...</td></tr>';
 
         renderForm();
         loadData();
     }
 
-    // Dibuja los inputs según los campos de la entidad seleccionada
     function renderForm() {
         const container = document.getElementById('formInputs');
         container.innerHTML = CONFIG[currentTab].fields.map((f, i) => `
@@ -142,18 +137,17 @@
         `).join('');
     }
 
-    // Carga los datos desde la API correspondiente
     async function loadData() {
         try {
-            // Fetch dinámico según la pestaña activa
             const res = await fetch(CONFIG[currentTab].url);
+            if (!res.ok) throw new Error('Error en la red');
             const data = await res.json();
 
             document.getElementById('tableHeader').innerHTML = CONFIG[currentTab].labels.map(l => `<th class="p-4">${l}</th>`).join('') + `<th class="p-4 text-right">Status</th>`;
 
             const tbody = document.getElementById('tableBody');
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="100%" class="p-8 text-center text-slate-500">No hay datos en esta categoría</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="100%" class="p-8 text-center text-slate-500">No hay datos registrados aún</td></tr>';
                 return;
             }
 
@@ -165,15 +159,13 @@
             `).join('');
         } catch (e) {
             console.error("Error al cargar:", e);
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-red-400">Error al conectar con la API</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-red-400">Error: No se encontró la ruta ' + CONFIG[currentTab].url + '</td></tr>';
         }
     }
 
-    // Envía el formulario a la tabla correcta
     document.getElementById('masterForm').onsubmit = async (e) => {
         e.preventDefault();
         const payload = {};
-
         CONFIG[currentTab].fields.forEach(f => {
             payload[f] = document.getElementById(`input-${f}`).value;
         });
@@ -186,11 +178,11 @@
             });
 
             if(res.ok) {
-                alert(`¡${CONFIG[currentTab].title} registrado con éxito!`);
+                alert(`¡${CONFIG[currentTab].title} guardado con éxito!`);
                 e.target.reset();
-                loadData(); // Refresca solo la tabla actual
+                loadData();
             } else {
-                alert('Error 500: El servidor rechazó los datos. Revisa tus Entidades en Java.');
+                alert('Error al guardar. Revisa que el servidor esté encendido.');
             }
         } catch (err) {
             alert('Error de red al intentar guardar.');
@@ -199,3 +191,4 @@
 </script>
 </body>
 </html>
+
