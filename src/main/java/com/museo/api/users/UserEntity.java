@@ -16,7 +16,7 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false, length = 50)
-    private String username;
+    private String name;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
@@ -28,3 +28,4 @@ public class UserEntity {
     private String role; // Ejemplo: ADMIN, GUIDE, VISITOR
 
 }
+
