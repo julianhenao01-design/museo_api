@@ -63,11 +63,9 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-white/5 text-slate-400 text-xs uppercase tracking-widest">
-                        <tr id="tableHeader">
-                        </tr>
+                        <tr id="tableHeader"></tr>
                         </thead>
-                        <tbody id="tableBody" class="text-sm">
-                        </tbody>
+                        <tbody id="tableBody" class="text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -78,37 +76,42 @@
 <script>
     let currentTab = 'users';
 
-    // Configuración de Endpoints y Campos (Deben coincidir con tus Entity de Java)
+    // CONFIGURACIÓN MAESTRA: Separa las URLs y los campos para cada tabla
     const CONFIG = {
         users: {
-            title: "Usuarios", desc: "Lista de visitantes y administradores", url: "/api/users",
-            fields: ['name', 'email'], labels: ['Nombre', 'Email']
+            title: "Usuarios",
+            desc: "Lista de visitantes y administradores",
+            url: "/api/users",
+            fields: ['name', 'email'],
+            labels: ['Nombre', 'Email']
         },
         guides: {
-            title: "Guías", desc: "Personal especializado en recorridos", url: "/api/guides",
-            fields: ['name', 'specialty'], labels: ['Nombre del Guía', 'Especialidad']
+            title: "Guías",
+            desc: "Personal especializado en recorridos",
+            url: "/api/guides",
+            fields: ['name', 'specialty'],
+            labels: ['Nombre del Guía', 'Especialidad']
         },
         art: {
-            title: "Exhibiciones", desc: "Obras de arte y piezas históricas", url: "/api/exhibition",
-            fields: ['title', 'artist', 'year'], labels: ['Título de Obra', 'Artista', 'Año']
+            title: "Exhibiciones",
+            desc: "Obras de arte y piezas históricas",
+            url: "/api/exhibition",
+            fields: ['title', 'artist', 'year'],
+            labels: ['Título de Obra', 'Artista', 'Año']
         }
     };
 
     // Lógica de Login
     document.getElementById('loginForm').onsubmit = (e) => {
         e.preventDefault();
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        if(u === 'admin' && p === '1234') {
+        if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             showTab('users');
-        } else {
-            alert('Credenciales incorrectas');
-        }
+        } else { alert('Credenciales incorrectas'); }
     };
 
-    // Cambiar entre pestañas
+    // Función para cambiar de pestaña y limpiar datos previos
     function showTab(tab) {
         currentTab = tab;
         document.querySelectorAll('nav button').forEach(b => {
@@ -120,11 +123,14 @@
         document.getElementById('tabTitle').innerText = `Gestión de ${CONFIG[tab].title}`;
         document.getElementById('tabDesc').innerText = CONFIG[tab].desc;
 
+        // Limpia la tabla visualmente mientras carga
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">Cargando registros de la tabla...</td></tr>';
+
         renderForm();
         loadData();
     }
 
-    // Crear inputs según la pestaña
+    // Dibuja los inputs según los campos de la entidad seleccionada
     function renderForm() {
         const container = document.getElementById('formInputs');
         container.innerHTML = CONFIG[currentTab].fields.map((f, i) => `
@@ -136,29 +142,34 @@
         `).join('');
     }
 
-    // Obtener datos de la API (GET)
+    // Carga los datos desde la API correspondiente
     async function loadData() {
         try {
+            // Fetch dinámico según la pestaña activa
             const res = await fetch(CONFIG[currentTab].url);
             const data = await res.json();
 
-            // Generar cabeceras de tabla
             document.getElementById('tableHeader').innerHTML = CONFIG[currentTab].labels.map(l => `<th class="p-4">${l}</th>`).join('') + `<th class="p-4 text-right">Status</th>`;
 
-            // Generar filas
             const tbody = document.getElementById('tableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="100%" class="p-8 text-center text-slate-500">No hay datos en esta categoría</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = data.map(item => `
                 <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
                     ${CONFIG[currentTab].fields.map(f => `<td class="p-4 text-slate-300 font-medium">${item[f] || '---'}</td>`).join('')}
-                    <td class="p-4 text-right text-[10px] text-green-500 font-bold uppercase">Activo</td>
+                    <td class="p-4 text-right text-[10px] text-green-500 font-bold uppercase tracking-widest">En DB</td>
                 </tr>
             `).join('');
         } catch (e) {
-            console.error("Error cargando datos:", e);
+            console.error("Error al cargar:", e);
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-red-400">Error al conectar con la API</td></tr>';
         }
     }
 
-    // Enviar datos a la API (POST)
+    // Envía el formulario a la tabla correcta
     document.getElementById('masterForm').onsubmit = async (e) => {
         e.preventDefault();
         const payload = {};
@@ -166,8 +177,6 @@
         CONFIG[currentTab].fields.forEach(f => {
             payload[f] = document.getElementById(`input-${f}`).value;
         });
-
-        console.log("Enviando JSON:", payload);
 
         try {
             const res = await fetch(CONFIG[currentTab].url, {
@@ -177,16 +186,14 @@
             });
 
             if(res.ok) {
-                alert('¡Guardado exitosamente!');
+                alert(`¡${CONFIG[currentTab].title} registrado con éxito!`);
                 e.target.reset();
-                loadData();
+                loadData(); // Refresca solo la tabla actual
             } else {
-                const errorText = await res.text();
-                console.error("Respuesta del servidor:", errorText);
-                alert('Error 500: Revisa que los nombres en Java coincidan con el HTML.');
+                alert('Error 500: El servidor rechazó los datos. Revisa tus Entidades en Java.');
             }
         } catch (err) {
-            alert('No se pudo conectar con el servidor de Railway.');
+            alert('Error de red al intentar guardar.');
         }
     };
 </script>
