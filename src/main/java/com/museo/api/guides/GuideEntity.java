@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "guides", schema = "guides_schema") // Su propio esquema en Railway
+@Table(name = "guides") // Se guardará en la tabla de guías
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,17 +13,12 @@ public class GuideEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // El identificador obligatorio para JPA
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false)
+    private String name; // Coincide con 'name' en el CONFIG de tu index.html
 
-    @Column(length = 100)
-    private String specialization; // Ejemplo: Pintura Barroca, Arqueología
-
-    @Column(length = 50)
-    private String language; // Ejemplo: Español, Inglés, Francés
-
-    @Column(name = "years_experience")
-    private Integer yearsOfExperience;
+    @Column(nullable = false)
+    private String specialty; // Coincide con 'specialty' en el CONFIG de tu index.html
 }
+

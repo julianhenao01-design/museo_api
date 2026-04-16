@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "exhibitions", schema = "exhibition_schema") // Se guarda en su propio esquema
+@Table(name = "exhibitions") // Nombre de la tabla en tu base de datos
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,21 +16,13 @@ public class ExhibitionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "start_date")
-    private LocalDate startDate;
-
-    @Column(name = "end_date")
-    private LocalDate endDate;
+    @Column(nullable = false)
+    private String title;  // Coincide con 'title' en el CONFIG del HTML
 
     @Column(nullable = false)
-    private String location; // Ejemplo: "Sala A", "Pabellón Norte"
+    private String artist; // Coincide con 'artist' en el CONFIG del HTML
 
-
+    @Column(nullable = false)
+    private String year;   // Coincide con 'year' en el CONFIG del HTML
 }
 
