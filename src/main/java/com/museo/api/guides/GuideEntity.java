@@ -1,24 +1,23 @@
-package com.museo.api.guides;
+ackage com.museo.api.rooms;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "guides") // Se guardará en la tabla de guías
+@Table(name = "rooms")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GuideEntity {
+public class RoomEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // El identificador obligatorio para JPA
+    private Long id;
 
     @Column(nullable = false)
-    private String name; // Coincide con 'name' en el CONFIG de tu index.html
+    private String name;
 
     @Column(nullable = false)
-    private String specialty; // Coincide con 'specialty' en el CONFIG de tu index.html
+    private String floor;
 }
-
