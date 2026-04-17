@@ -22,4 +22,9 @@ public class GuideController {
     public GuideEntity create(@RequestBody GuideEntity guide) {
         return guideRepository.save(guide);
     }
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<String> delete(@PathVariable Long id) {
+        guideRepository.deleteById(id);
+        return org.springframework.http.ResponseEntity.ok("Guía eliminado");
+    }
 }

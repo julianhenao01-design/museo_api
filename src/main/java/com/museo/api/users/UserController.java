@@ -26,10 +26,11 @@ public class UserController {
         return userService.guardar(user);
     }
 
-    // ELIMINAR USUARIO (El nuevo botón rojo en Swagger)
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public org.springframework.http.ResponseEntity<String> delete(@PathVariable Long id) {
         userService.eliminar(id);
-        return ResponseEntity.ok("Usuario con ID " + id + " eliminado con éxito");
+        return org.springframework.http.ResponseEntity.ok("Usuario eliminado con éxito");
     }
 }
+
+
