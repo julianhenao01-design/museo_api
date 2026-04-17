@@ -27,4 +27,10 @@ public class GuideController {
         guideRepository.deleteById(id);
         return org.springframework.http.ResponseEntity.ok("Guía eliminado");
     }
+    @PutMapping("/{id}")
+    public GuideEntity update(@PathVariable Long id, @RequestBody GuideEntity guide) {
+        guide.setId(id);
+        return guideRepository.save(guide);
+    }
 }
+

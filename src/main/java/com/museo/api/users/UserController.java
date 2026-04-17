@@ -31,6 +31,11 @@ public class UserController {
         userService.eliminar(id);
         return org.springframework.http.ResponseEntity.ok("Usuario eliminado con éxito");
     }
+    @PutMapping("/{id}")
+    public UserEntity update(@PathVariable Long id, @RequestBody UserEntity user) {
+        user.setId(id); // Asegura que se actualice el registro correcto
+        return userService.guardar(user);
+    }
 }
 
 

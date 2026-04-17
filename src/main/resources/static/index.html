@@ -67,15 +67,14 @@
 
 <script>
     let currentTab = 'users';
+    let editingId = null; // Variable para saber si estamos editando
 
-    // Rutas configuradas según tus controladores Java
     const CONFIG = {
         users: { title: "Usuarios", desc: "Lista de visitantes y administradores", url: "/api/user", fields: ['name', 'email'], labels: ['Nombre', 'Email'] },
         guides: { title: "Guías", desc: "Gestión de personal de guía", url: "/api/guide", fields: ['name', 'specialty'], labels: ['Nombre', 'Especialidad'] },
         art: { title: "Exhibiciones", desc: "Catálogo de obras y exposiciones", url: "/api/exhibition", fields: ['title', 'artist', 'year'], labels: ['Obra', 'Artista', 'Año'] }
     };
 
-    // Login simple
     document.getElementById('loginForm').onsubmit = (e) => {
         e.preventDefault();
         if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
@@ -87,6 +86,7 @@
 
     function showTab(tab) {
         currentTab = tab;
+        cancelEdit(); // Limpiar si estábamos editando algo
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active', 'text-amber-500'));
         document.getElementById(`btn-${tab}`).classList.add('tab-active', 'text-amber-500');
         document.getElementById('tabTitle').innerText = `Gestión de ${CONFIG[tab].title}`;
@@ -110,7 +110,6 @@
             const res = await fetch(CONFIG[currentTab].url);
             const data = await res.json();
 
-            // Cabecera con columna Acciones
             document.getElementById('tableHeader').innerHTML = CONFIG[currentTab].labels.map(l => `<th class="p-4 text-left">${l}</th>`).join('') + '<th class="p-4 text-right">Acciones</th>';
 
             const tbody = document.getElementById('tableBody');
@@ -122,9 +121,12 @@
             tbody.innerHTML = data.map(item => `
                 <tr class="hover:bg-white/5 transition-colors">
                     ${CONFIG[currentTab].fields.map(f => `<td class="p-4 text-slate-300 font-medium">${item[f] || '---'}</td>`).join('')}
-                    <td class="p-4 text-right">
-                        <button onclick="deleteItem(${item.id})" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-3 py-1 rounded-md text-xs font-bold transition-all border border-red-500/20">
-                            ELIMINAR
+                    <td class="p-4 text-right flex justify-end gap-2">
+                        <button onclick='prepareEdit(${JSON.stringify(item)})' class="bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white px-3 py-1 rounded-md text-[10px] font-bold transition-all border border-blue-500/20">
+                            EDITAR
+                        </button>
+                        <button onclick="deleteItem(${item.id})" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-3 py-1 rounded-md text-[10px] font-bold transition-all border border-red-500/20">
+                            BORRAR
                         </button>
                     </td>
                 </tr>
@@ -134,46 +136,65 @@
         }
     }
 
-    // FUNCIÓN PARA ELIMINAR (Conecta con @DeleteMapping en Java)
-    async function deleteItem(id) {
-        if (!confirm('¿Seguro que quieres borrar este registro de forma permanente?')) return;
+    // NUEVA FUNCIÓN: Prepara el formulario para editar
+    function prepareEdit(item) {
+        editingId = item.id;
+        CONFIG[currentTab].fields.forEach(f => {
+            document.getElementById(`input-${f}`).value = item[f];
+        });
 
-        try {
-            const res = await fetch(`${CONFIG[currentTab].url}/${id}`, {
-                method: 'DELETE'
-            });
+        const btn = document.querySelector('#masterForm button[type="submit"]');
+        btn.innerText = "ACTUALIZAR DATOS";
+        btn.classList.replace('text-amber-500', 'text-blue-400');
+        btn.classList.replace('border-amber-500/50', 'border-blue-500/50');
+    }
 
-            if (res.ok) {
-                loadData(); // Refresca la tabla automáticamente
-            } else {
-                alert('No se pudo eliminar. Revisa la consola para más detalles.');
-            }
-        } catch (error) {
-            alert('Error de conexión con el servidor.');
+    function cancelEdit() {
+        editingId = null;
+        const form = document.getElementById('masterForm');
+        if(form) form.reset();
+        const btn = document.querySelector('#masterForm button[type="submit"]');
+        if(btn) {
+            btn.innerText = "GUARDAR EN DB";
+            btn.classList.replace('text-blue-400', 'text-amber-500');
+            btn.classList.replace('border-blue-500/50', 'border-amber-500/50');
         }
     }
 
-    // Guardar nuevo registro
+    async function deleteItem(id) {
+        if (!confirm('¿Seguro que quieres borrar este registro?')) return;
+        try {
+            const res = await fetch(`${CONFIG[currentTab].url}/${id}`, { method: 'DELETE' });
+            if (res.ok) loadData();
+        } catch (error) { alert('Error de conexión'); }
+    }
+
     document.getElementById('masterForm').onsubmit = async (e) => {
         e.preventDefault();
         const payload = {};
+        // Si estamos editando, incluimos el ID en el cuerpo del JSON
+        if(editingId) payload.id = editingId;
+
         CONFIG[currentTab].fields.forEach(f => payload[f] = document.getElementById(`input-${f}`).value);
 
+        const method = editingId ? 'PUT' : 'POST';
+        const url = editingId ? `${CONFIG[currentTab].url}/${editingId}` : CONFIG[currentTab].url;
+
         try {
-            const res = await fetch(CONFIG[currentTab].url, {
-                method: 'POST',
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
             if(res.ok) {
-                e.target.reset();
+                cancelEdit();
                 loadData();
             } else {
-                alert('Error al guardar. Revisa que el servidor esté encendido.');
+                alert('Error en la operación');
             }
         } catch (err) {
-            alert('Error de red al intentar guardar.');
+            alert('Error de red');
         }
     };
 </script>

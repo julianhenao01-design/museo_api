@@ -27,4 +27,10 @@ public class ExhibitionController {
         exhibitionRepository.deleteById(id);
         return org.springframework.http.ResponseEntity.ok("Exhibición eliminada");
     }
+    @PutMapping("/{id}")
+    public ExhibitionEntity update(@PathVariable Long id, @RequestBody ExhibitionEntity exhibition) {
+        exhibition.setId(id);
+        return exhibitionRepository.save(exhibition);
+    }
 }
+
