@@ -32,4 +32,3 @@ public class ExhibitionController {
         return ResponseEntity.ok("Exhibición eliminada");
     }
 }
-
